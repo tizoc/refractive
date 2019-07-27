@@ -7,13 +7,6 @@ type subscriptionState('a) = {
   value: 'a,
 };
 
-// Using %raw because useDebugValue does not exist in Reason-React
-let useDebugValue: unit => unit = [%raw {|
-  function(value) {
-     React.useDebugValue(value);
-  }
-|}];
-
 // Hook used for safely managing subscriptions in concurrent mode.
 //
 // In order to avoid removing and re-adding subscriptions each time this hook is called,
@@ -52,7 +45,13 @@ let useSubscription =
   };
 
   // Display the current value for this hook in React DevTools.
-  ignore(useDebugValue(valueToReturn^));
+  // Using %raw because useDebugValue does not exist in Reason-React
+  let useDebugValue: 'a => unit = [%raw {|
+    function(value) {
+       React.useDebugValue(value);
+    }
+  |}];
+  useDebugValue(valueToReturn^);
 
   // It is important not to subscribe while rendering because this can lead to memory leaks.
   // (Learn more at reactjs.org/docs/strict-mode.html#detecting-unexpected-side-effects)
