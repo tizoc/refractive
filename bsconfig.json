@@ -1,0 +1,28 @@
+{
+  "name": "refractive",
+  "reason": {
+    "react-jsx": 3
+  },
+  "sources": [
+    "src",
+    {
+      "dir": "examples",
+      "subdirs": [
+        "counter"
+      ],
+      "type": "dev"
+    }
+  ],
+  "suffix": ".bs.js",
+  "namespace": true,
+  "bs-dependencies": [
+    "reason-react",
+    "reductive"
+  ],
+  "bs-dev-dependencies": [
+    "@glennsl/bs-jest",
+    "bs-react-testing-library",
+    "reason-hooks-testing-library"
+  ],
+  "refmt": 3
+}
