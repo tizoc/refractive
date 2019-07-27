@@ -6,7 +6,8 @@ module Subscription: {
     subscribe: (unit => unit, unit) => unit,
     value: 'value,
   };
-  let useSubscription: (unit => 'value, (unit => unit, unit) => unit) => 'value;
+  let useSubscription:
+    (unit => 'value, (unit => unit, unit) => unit) => 'value;
 };
 
 module Lense: {
@@ -50,7 +51,8 @@ module TrackedSelector: {
       let change:
         (Selector.t('state, 'value), 'value => 'value, 'state) => 'state;
       let subscribe: (Selector.t('state, 'value), unit => unit, unit) => unit;
-      let storeEnhancer: (Store.t('action, 'state), 'action => unit, 'action) => unit;
+      let storeEnhancer:
+        (Store.t('action, 'state), 'action => unit, 'action) => unit;
     };
 };
 
@@ -66,8 +68,7 @@ module Context: {
   module Make:
     (Config: CONFIG) =>
      {
-      let context:
-        React.Context.t(Store.t(Config.action, Config.state));
+      let context: React.Context.t(Store.t(Config.action, Config.state));
 
       module Provider: {
         [@react.component]
