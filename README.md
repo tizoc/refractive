@@ -13,6 +13,7 @@ This is **WIP**.
 To run the example:
 
     yarn install
+    yarn build
     yarn webpack
 
 and the open `examples/counter/index.html` in your browser.
