@@ -1,11 +1,6 @@
 module Store = Reductive.Store;
 
 module Subscription: {
-  type subscriptionState('value) = {
-    getCurrentValue: unit => 'value,
-    subscribe: (unit => unit, unit) => unit,
-    value: 'value,
-  };
   let useSubscription:
     (unit => 'value, (unit => unit, unit) => unit) => 'value;
 };
