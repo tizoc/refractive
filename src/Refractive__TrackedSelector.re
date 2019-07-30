@@ -1,4 +1,4 @@
-open Refractive__Selector;
+module Selector = Refractive__Selector;
 
 module Make = (()) => {
   let listeners: Belt.HashMap.String.t(list(unit => unit)) =
@@ -7,29 +7,29 @@ module Make = (()) => {
   let modifications = ref(Belt.Set.String.empty);
 
   let change = (selector, f, state) => {
-    modifications := Belt.Set.String.add(modifications^, selector.path);
-    change(f, state, selector);
+    modifications :=
+      List.fold_left(Belt.Set.String.add, modifications^, Selector.touchedPaths(selector));
+    Selector.change(f, state, selector);
   };
 
-  let unsubscribe = (selector, listener, ()) =>
-    switch (Belt.HashMap.String.get(listeners, selector.path)) {
+  let unsubscribe = (selector, listener, ()) => {
+    let path = Selector.path(selector);
+    switch (Belt.HashMap.String.get(listeners, path)) {
     | None => ()
     | Some(pathListeners) =>
       let matchedListeners = List.filter(l => listener !== l, pathListeners);
-      Belt.HashMap.String.set(listeners, selector.path, matchedListeners);
+      Belt.HashMap.String.set(listeners, path, matchedListeners);
     };
+  };
 
   let subscribe = (selector, listener) => {
+    let path = Selector.path(selector);
     let pathListeners =
       Belt.Option.getWithDefault(
-        Belt.HashMap.String.get(listeners, selector.path),
+        Belt.HashMap.String.get(listeners, path),
         [],
       );
-    Belt.HashMap.String.set(
-      listeners,
-      selector.path,
-      pathListeners @ [listener],
-    );
+    Belt.HashMap.String.set(listeners, path, pathListeners @ [listener]);
     unsubscribe(selector, listener);
   };
 

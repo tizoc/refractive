@@ -6,10 +6,11 @@ module Subscription: {
 };
 
 module Lense: {
-  type t('state, 'value) = {
-    get: 'state => 'value,
-    set: ('value, 'state) => 'state,
-  };
+  type t('state, 'value);
+
+  let make:
+    (~get: 'state => 'value, ~set: ('value, 'state) => 'state) =>
+    t('state, 'value);
 
   // Operations
   let read: ('state, t('state, 'value)) => 'value;
@@ -23,10 +24,10 @@ module Lense: {
 };
 
 module Selector: {
-  type t('state, 'value) = {
-    lense: Lense.t('state, 'value),
-    path: string,
-  };
+  type t('state, 'value);
+
+  let make:
+    (~lense: Lense.t('state, 'value), ~path: string) => t('state, 'value);
 
   // Operations
   let read: ('state, t('state, 'value)) => 'value;

@@ -3,6 +3,10 @@ type t('state, 'value) = {
   set: ('value, 'state) => 'state,
 };
 
+let make = (~get, ~set) => {
+  {get, set};
+};
+
 let read = (state, lense) => lense.get(state);
 
 let change = (f, state, lense) => lense.set(f(lense.get(state)), state);
@@ -37,4 +41,9 @@ let arrayLength = filler => {
       Array.sub(arr, 0, max(0, length));
     };
   },
+};
+
+let assoc = key => {
+  get: List.assoc(key),
+  set: (value, assoc) => [(key, value), ...assoc],
 };
