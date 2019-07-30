@@ -36,10 +36,7 @@ module Make = (()) => {
   let notifyAllInPath = path => {
     switch (Belt.HashMap.String.get(listeners, path)) {
     | None => ()
-    | Some(pathListeners) =>
-      Js.log("Calling listeners for path " ++ path);
-      Js.log(Belt.List.toArray(pathListeners));
-      List.iter(listener => listener(), pathListeners);
+    | Some(pathListeners) => List.iter(listener => listener(), pathListeners)
     };
   };
 
