@@ -1,5 +1,5 @@
-type t = array(int);
-let initialValue = [||];
+type t = {counters: array(int)};
+let initialValue = {counters: [|0, 0, 0, 0, 0|]};
 
 type action =
   | AppendCounter
@@ -7,9 +7,21 @@ type action =
   | IncrementCounter(int)
   | DecrementCounter(int);
 
-// Selectors
-let countersCount = Refractive.Selector.arrayLength(0);
-let counterValue = i => Refractive.Selector.arrayIndex(i);
+module Lenses = {
+  let counters =
+    Refractive.Lense.make(
+      ~get=x => x.counters,
+      ~set=(newVal, _) => {counters: newVal},
+    );
+};
+
+module Selectors = {
+  let (|-) = Refractive.Selector.compose;
+  let counters =
+    Refractive.Selector.make(~lense=Lenses.counters, ~path="counter");
+  let countersCount = counters |- Refractive.Selector.arrayLength(0);
+  let counterValue = i => counters |- Refractive.Selector.arrayIndex(i);
+};
 
 // Module for tracked selectors and modifications
 // This module's `change` function must be used to update the state
@@ -18,7 +30,8 @@ module Tracked =
   Refractive.TrackedSelector.Make({});
 
 let reducer = (state, action) => {
-  let change = Tracked.change;
+  open Selectors;
+  open Tracked;
   switch (action) {
   | AppendCounter => change(countersCount, count => count + 1, state)
   | RemoveLastCounter => change(countersCount, count => count - 1, state)
