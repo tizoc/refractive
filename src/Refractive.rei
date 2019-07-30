@@ -1,10 +1,5 @@
 module Store = Reductive.Store;
 
-module Subscription: {
-  let useSubscription:
-    (unit => 'value, (unit => unit, unit) => unit) => 'value;
-};
-
 module Lense: {
   type t('state, 'value);
 
