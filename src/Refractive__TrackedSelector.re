@@ -8,7 +8,11 @@ module Make = (()) => {
 
   let change = (selector, f, state) => {
     modifications :=
-      List.fold_left(Belt.Set.String.add, modifications^, Selector.touchedPaths(selector));
+      List.fold_left(
+        Belt.Set.String.add,
+        modifications^,
+        Selector.touchedPaths(selector),
+      );
     Selector.change(f, state, selector);
   };
 
