@@ -6,14 +6,14 @@ module Make = (()) => {
 
   let modifications = ref(Belt.Set.String.empty);
 
-  let change = (selector, f, state) => {
+  let modify = (selector, f, state) => {
     modifications :=
       List.fold_left(
         Belt.Set.String.add,
         modifications^,
         Selector.touchedPaths(selector),
       );
-    Selector.change(f, state, selector);
+    Selector.modify(f, state, selector);
   };
 
   let unsubscribe = (selector, listener, ()) => {

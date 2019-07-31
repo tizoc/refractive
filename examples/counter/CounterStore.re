@@ -24,7 +24,7 @@ module Selectors = {
 };
 
 // Module for tracked selectors and modifications
-// This module's `change` function must be used to update the state
+// This module's `modify` function must be used to update the state
 // and the `storeEnhancer` function should be used to enhance the store
 module Tracked =
   Refractive.TrackedSelector.Make({});
@@ -33,12 +33,12 @@ let reducer = (state, action) => {
   open Selectors;
   open Tracked;
   switch (action) {
-  | AppendCounter => change(countersCount, count => count + 1, state)
-  | RemoveLastCounter => change(countersCount, count => count - 1, state)
+  | AppendCounter => modify(countersCount, count => count + 1, state)
+  | RemoveLastCounter => modify(countersCount, count => count - 1, state)
   | IncrementCounter(index) =>
-    change(counterValue(index), n => n + 1, state)
+    modify(counterValue(index), n => n + 1, state)
   | DecrementCounter(index) =>
-    change(counterValue(index), n => n - 1, state)
+    modify(counterValue(index), n => n - 1, state)
   };
 };
 

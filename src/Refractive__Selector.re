@@ -18,9 +18,9 @@ let path = ({paths}) => List.hd(paths);
 
 let touchedPaths = ({paths}) => paths;
 
-let read = (state, selector) => Lense.read(state, selector.lense);
+let view = (state, selector) => Lense.view(state, selector.lense);
 
-let change = (f, state, selector) => Lense.change(f, state, selector.lense);
+let modify = (f, state, selector) => Lense.modify(f, state, selector.lense);
 
 let compose = (outerSelector, innerSelector) => {
   let lense = Lense.compose(outerSelector.lense, innerSelector.lense);

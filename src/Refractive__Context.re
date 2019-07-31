@@ -35,10 +35,10 @@ module Make = (Config: CONFIG) => {
       );
     let getCurrentValue =
       React.useCallback1(
-        () => Selector.read(Store.getState(store), selector),
+        () => Selector.view(Store.getState(store), selector),
         [|Selector.path(selector)|],
       );
     useSubscription(getCurrentValue, subscribe);
-    Selector.read(Store.getState(store), selector);
+    Selector.view(Store.getState(store), selector);
   };
 };

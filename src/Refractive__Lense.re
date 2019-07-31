@@ -7,9 +7,8 @@ let make = (~get, ~set) => {
   {get, set};
 };
 
-let read = (state, lense) => lense.get(state);
-
-let change = (f, state, lense) => lense.set(f(lense.get(state)), state);
+let view = (state, lense) => lense.get(state);
+let modify = (f, state, lense) => lense.set(f(lense.get(state)), state);
 
 let compose = (outerLense, innerLense) => {
   let get = state => state |> outerLense.get |> innerLense.get;

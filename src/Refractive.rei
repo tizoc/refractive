@@ -8,8 +8,8 @@ module Lense: {
     t('state, 'value);
 
   // Operations
-  let read: ('state, t('state, 'value)) => 'value;
-  let change: ('value => 'value, 'state, t('state, 'value)) => 'state;
+  let view: ('state, t('state, 'value)) => 'value;
+  let modify: ('value => 'value, 'state, t('state, 'value)) => 'state;
   let compose:
     (t('state, 'valueA), t('valueA, 'valueB)) => t('state, 'valueB);
 
@@ -25,8 +25,8 @@ module Selector: {
     (~lense: Lense.t('state, 'value), ~path: string) => t('state, 'value);
 
   // Operations
-  let read: ('state, t('state, 'value)) => 'value;
-  let change: ('value => 'value, 'state, t('state, 'value)) => 'state;
+  let view: ('state, t('state, 'value)) => 'value;
+  let modify: ('value => 'value, 'state, t('state, 'value)) => 'state;
   let compose:
     (t('state, 'valueA), t('valueA, 'valueB)) => t('state, 'valueB);
 
@@ -39,7 +39,7 @@ module TrackedSelector: {
   module Make:
     () =>
      {
-      let change:
+      let modify:
         (Selector.t('state, 'value), 'value => 'value, 'state) => 'state;
       let subscribe: (Selector.t('state, 'value), unit => unit, unit) => unit;
       let storeEnhancer:
