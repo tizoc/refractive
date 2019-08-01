@@ -11,17 +11,17 @@
 // https://bucklescript.github.io/docs/en/automatic-interface-generation
 const fs = require('fs');
 
-const emitLense = name => {
-  console.log(`  let ${name} = Refractive.Lense.make(~get=x => x.${name}, ~set=(newVal, x) => { ...x, ${name}: newVal });`);
+const emitLens = name => {
+  console.log(`  let ${name} = Refractive.Lens.make(~get=x => x.${name}, ~set=(newVal, x) => { ...x, ${name}: newVal });`);
 }
 
 const emitSelector = name => {
-  console.log(`  let ${name} = Refractive.Selector.make(~lense=Lenses.${name}, ~path=\"${name}\");`);
+  console.log(`  let ${name} = Refractive.Selector.make(~lens=Lenses.${name}, ~path=\"${name}\");`);
 }
 
 const emitLensesModule = names => {
     console.log("module Lenses = {");
-    names.forEach(emitLense);
+    names.forEach(emitLens);
     console.log("};");
 }
 

@@ -7,14 +7,14 @@ let make = (~get, ~set) => {
   {get, set};
 };
 
-let view = (state, lense) => lense.get(state);
-let modify = (f, state, lense) => lense.set(f(lense.get(state)), state);
+let view = (state, lens) => lens.get(state);
+let modify = (f, state, lens) => lens.set(f(lens.get(state)), state);
 
-let compose = (outerLense, innerLense) => {
-  let get = state => state |> outerLense.get |> innerLense.get;
+let compose = (outerLens, innerLens) => {
+  let get = state => state |> outerLens.get |> innerLens.get;
   let set = (value, state) => {
-    let updated = state |> outerLense.get |> innerLense.set(value);
-    outerLense.set(updated, state);
+    let updated = state |> outerLens.get |> innerLens.set(value);
+    outerLens.set(updated, state);
   };
   {get, set};
 };

@@ -1,6 +1,6 @@
 module Store = Reductive.Store;
 
-module Lense: {
+module Lens: {
   type t('state, 'value);
 
   let make:
@@ -22,7 +22,7 @@ module Selector: {
   type t('state, 'value);
 
   let make:
-    (~lense: Lense.t('state, 'value), ~path: string) => t('state, 'value);
+    (~lens: Lens.t('state, 'value), ~path: string) => t('state, 'value);
 
   // Operations
   let view: ('state, t('state, 'value)) => 'value;

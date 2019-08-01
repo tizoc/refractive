@@ -1,7 +1,7 @@
-module Lense = Refractive__Lense;
+module Lens = Refractive__Lens;
 
 type t('state, 'value) = {
-  lense: Lense.t('state, 'value),
+  lens: Lens.t('state, 'value),
   paths: list(string),
 };
 
@@ -12,29 +12,29 @@ let rec unfoldPath = path => {
   };
 };
 
-let make = (~lense, ~path) => {lense, paths: unfoldPath(path)};
+let make = (~lens, ~path) => {lens, paths: unfoldPath(path)};
 
 let path = ({paths}) => List.hd(paths);
 
 let touchedPaths = ({paths}) => paths;
 
-let view = (state, selector) => Lense.view(state, selector.lense);
+let view = (state, selector) => Lens.view(state, selector.lens);
 
-let modify = (f, state, selector) => Lense.modify(f, state, selector.lense);
+let modify = (f, state, selector) => Lens.modify(f, state, selector.lens);
 
 let compose = (outerSelector, innerSelector) => {
-  let lense = Lense.compose(outerSelector.lense, innerSelector.lense);
+  let lens = Lens.compose(outerSelector.lens, innerSelector.lens);
   let paths =
     unfoldPath(
       List.hd(outerSelector.paths) ++ "/" ++ List.hd(innerSelector.paths),
     );
-  {lense, paths};
+  {lens, paths};
 };
 
 // Selector wrappers for default lenses
 
 let arrayIndex = i =>
-  make(~lense=Lense.arrayIndex(i), ~path=string_of_int(i));
+  make(~lens=Lens.arrayIndex(i), ~path=string_of_int(i));
 
 let arrayLength = filler =>
-  make(~lense=Lense.arrayLength(filler), ~path="$length");
+  make(~lens=Lens.arrayLength(filler), ~path="$length");
