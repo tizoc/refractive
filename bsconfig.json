@@ -9,7 +9,8 @@
       "dir": "examples",
       "subdirs": [
         "counter",
-        "grid"
+        "grid",
+        "grid-concurrent"
       ],
       "type": "dev"
     }
