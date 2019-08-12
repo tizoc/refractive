@@ -4,7 +4,9 @@ type t = {cells: array(array(int))};
 let initialValue = {cells: Array.make(sideSize, Array.make(sideSize, 0))};
 
 type action =
-  | Incr(int);
+  | Incr(int)
+  | Reset
+  | Randomize;
 
 module Lenses = {
   let cells =
@@ -15,12 +17,14 @@ module Lenses = {
 };
 
 module Selectors = {
-  let (|-) = Refractive.Selector.compose;
-  let cells = Refractive.Selector.make(~lens=Lenses.cells, ~path="cells");
-  let cellValue = i =>
-    cells
-    |- Refractive.Selector.arrayIndex(i / sideSize)
-    |- Refractive.Selector.arrayIndex(i mod sideSize);
+  open Refractive.Selector;
+  let (|-) = compose;
+  let cells = make(~lens=Lenses.cells, ~path="cells");
+  let cellValue = i => {
+    let row = i / sideSize;
+    let col = i mod sideSize;
+    cells |- arrayIndex(row) |- arrayIndex(col);
+  };
 };
 
 // Module for tracked selectors and modifications
@@ -34,6 +38,16 @@ let reducer = (state, action) => {
     Tracked.(
       switch (action) {
       | Incr(idx) => modify(cellValue(idx), v => (v + 1) mod 10, state)
+      | Reset => modify(cells, _ => initialValue.cells, state)
+      | Randomize =>
+        modify(
+          cells,
+          _ =>
+            Array.init(sideSize, _ =>
+              Array.init(sideSize, _ => Random.int(10))
+            ),
+          state,
+        )
       }
     )
   );
