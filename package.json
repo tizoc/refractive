@@ -28,6 +28,7 @@
     "@glennsl/bs-jest": "^0.4.8",
     "bs-platform": "^5.0.6",
     "bs-react-testing-library": "^0.6.0",
+    "immutable-re": "https://github.com/facebookarchive/immutable-re.git",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "reason-hooks-testing-library": "^0.2.0",

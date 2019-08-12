@@ -1,7 +1,9 @@
-let sideSize = 30;
+let sideSize = 40;
 
-type t = {cells: array(array(int))};
-let initialValue = {cells: Array.make(sideSize, Array.make(sideSize, 0))};
+type t = {cells: Immutable.Vector.t(int)};
+let initialValue = {
+  cells: Immutable.Vector.init(sideSize * sideSize, _ => 0),
+};
 
 type action =
   | Incr(int)
@@ -14,17 +16,20 @@ module Lenses = {
       ~get=x => x.cells,
       ~set=(newVal, _) => {cells: newVal},
     );
+  let pvecIndex = idx =>
+    Refractive.Lens.make(
+      ~get=v => Immutable.Vector.getOrRaise(idx, v),
+      ~set=(newVal, v) => Immutable.Vector.update(idx, newVal, v),
+    );
 };
 
 module Selectors = {
   open Refractive.Selector;
   let (|-) = compose;
   let cells = make(~lens=Lenses.cells, ~path="cells");
-  let cellValue = i => {
-    let row = i / sideSize;
-    let col = i mod sideSize;
-    cells |- arrayIndex(row) |- arrayIndex(col);
-  };
+  let pvecIndex = i =>
+    make(~lens=Lenses.pvecIndex(i), ~path=string_of_int(i));
+  let cellValue = i => cells |- pvecIndex(i);
 };
 
 // Module for tracked selectors and modifications
@@ -43,9 +48,7 @@ let reducer = (state, action) => {
         modify(
           cells,
           _ =>
-            Array.init(sideSize, _ =>
-              Array.init(sideSize, _ => Random.int(10))
-            ),
+            Immutable.Vector.init(sideSize * sideSize, _ => Random.int(10)),
           state,
         )
       }

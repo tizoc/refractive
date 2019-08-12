@@ -24,7 +24,8 @@
   "bs-dev-dependencies": [
     "@glennsl/bs-jest",
     "bs-react-testing-library",
-    "reason-hooks-testing-library"
+    "reason-hooks-testing-library",
+    "immutable-re"
   ],
   "refmt": 3
 }
