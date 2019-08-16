@@ -39,6 +39,5 @@ module Make = (Config: CONFIG) => {
         [|Selector.path(selector)|],
       );
     useSubscription(getCurrentValue, subscribe);
-    Selector.view(Store.getState(store), selector);
   };
 };
