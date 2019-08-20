@@ -22,8 +22,8 @@ let rec unfoldFragments = fragments =>
   switch (fragments) {
   | [] => []
   | [fragment] => [fragment]
-  | [fragment, ...rest] => [
-      join(string_of_path(rest), fragment),
+  | [_, ...rest] as fragments => [
+      string_of_path(fragments),
       ...unfoldFragments(rest),
     ]
   };
@@ -31,7 +31,9 @@ let rec unfoldFragments = fragments =>
 let unfoldPath = path => unfoldFragments(Array.to_list(path));
 
 let make = (~lens, ~path) => {
-  // TODO: raise error if path is empty
+  if (Array.length(path) < 1) {
+    invalid_arg("Selector path array must contain at least one element");
+  };
   let pathAndParents = unfoldPath(path);
   let pathString = List.hd(pathAndParents);
   let affectedPaths =
