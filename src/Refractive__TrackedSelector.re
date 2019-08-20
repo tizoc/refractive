@@ -8,18 +8,18 @@ module Make = (()) => {
 
   let modify = (selector, f, state) => {
     modifications :=
-      List.fold_left(
+      Array.fold_left(
         Belt.Set.String.add,
         modifications^,
-        Selector.touchedPaths(selector),
+        Selector.affectedPaths(selector),
       );
     Selector.modify(f, state, selector);
   };
 
   let unsubscribe = (selector, listener, ()) => {
     selector
-    |> Selector.listenPaths
-    |> List.iter(path =>
+    |> Selector.observedPaths
+    |> Array.iter(path =>
          switch (Belt.HashMap.String.get(listeners, path)) {
          | None => ()
          | Some(pathListeners) =>
@@ -32,8 +32,8 @@ module Make = (()) => {
 
   let subscribe = (selector, listener) => {
     selector
-    |> Selector.listenPaths
-    |> List.iter(path => {
+    |> Selector.observedPaths
+    |> Array.iter(path => {
          let pathListeners =
            Belt.Option.getWithDefault(
              Belt.HashMap.String.get(listeners, path),

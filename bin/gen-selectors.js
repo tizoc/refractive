@@ -16,7 +16,7 @@ const emitLens = name => {
 }
 
 const emitSelector = name => {
-  console.log(`  let ${name} = Refractive.Selector.make(~lens=Lenses.${name}, ~path=\"${name}\");`);
+  console.log(`  let ${name} = Refractive.Selector.make(~lens=Lenses.${name}, ~path=[|\"${name}\"|]);`);
 }
 
 const emitLensesModule = names => {

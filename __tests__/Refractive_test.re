@@ -29,11 +29,11 @@ module TestStore = {
   module Selectors = {
     open Refractive.Selector;
     let (|-) = compose;
-    let counters = make(~lens=Lenses.counters, ~path="counter");
+    let counters = make(~lens=Lenses.counters, ~path=[|"counter"|]);
     let countersCount = counters |- arrayLength(0);
     let counterValue = i => counters |- arrayIndex(i);
-    let textA = make(~lens=Lenses.textA, ~path="textA");
-    let textB = make(~lens=Lenses.textB, ~path="textB");
+    let textA = make(~lens=Lenses.textA, ~path=[|"textA"|]);
+    let textB = make(~lens=Lenses.textB, ~path=[|"textB"|]);
   };
 
   module Tracked =

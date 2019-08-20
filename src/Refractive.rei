@@ -22,7 +22,7 @@ module Selector: {
   type t('state, 'value);
 
   let make:
-    (~lens: Lens.t('state, 'value), ~path: string) => t('state, 'value);
+    (~lens: Lens.t('state, 'value), ~path: array(string)) => t('state, 'value);
 
   // Operations
   let view: ('state, t('state, 'value)) => 'value;

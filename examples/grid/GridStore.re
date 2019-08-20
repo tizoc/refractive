@@ -26,9 +26,9 @@ module Lenses = {
 module Selectors = {
   open Refractive.Selector;
   let (|-) = compose;
-  let cells = make(~lens=Lenses.cells, ~path="cells");
+  let cells = make(~lens=Lenses.cells, ~path=[|"cells"|]);
   let pvecIndex = i =>
-    make(~lens=Lenses.pvecIndex(i), ~path=string_of_int(i));
+    make(~lens=Lenses.pvecIndex(i), ~path=[|"get(" ++ string_of_int(i) ++ ")"|]);
   let cellValue = i => cells |- pvecIndex(i);
 };
 

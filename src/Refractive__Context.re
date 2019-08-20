@@ -31,12 +31,12 @@ module Make = (Config: CONFIG) => {
     let subscribe =
       React.useCallback1(
         handler => Config.subscribeSelector(selector, handler),
-        [|Selector.path(selector)|],
+        [|Selector.pathId(selector)|],
       );
     let getCurrentValue =
       React.useCallback1(
         () => Selector.view(Store.getState(store), selector),
-        [|Selector.path(selector)|],
+        [|Selector.pathId(selector)|],
       );
     useSubscription(getCurrentValue, subscribe);
   };

@@ -18,7 +18,7 @@ module Lenses = {
 module Selectors = {
   let (|-) = Refractive.Selector.compose;
   let counters =
-    Refractive.Selector.make(~lens=Lenses.counters, ~path="counter");
+    Refractive.Selector.make(~lens=Lenses.counters, ~path=[|"counter"|]);
   let countersCount = counters |- Refractive.Selector.arrayLength(0);
   let counterValue = i => counters |- Refractive.Selector.arrayIndex(i);
 };
