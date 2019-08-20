@@ -1,38 +1,45 @@
-type t('state, 'value) = {
-  get: 'state => 'value,
-  set: ('value, 'state) => 'state,
+let (@.) = (g, f, x) => g(f(x));
+
+type lens('childOut, 'childIn, 'parentOut, 'parentIn) =
+  'parentIn => ('childIn, 'childOut => 'parentOut);
+type t('parent, 'child) = lens('child, 'child, 'parent, 'parent);
+
+let make = (~get, ~set, t) => (get(t), set(_, t));
+
+let lens = f => f;
+
+let view = lens => fst @. lens;
+
+let modify = (lens, f, state) => {
+  let (value, set) = lens(state);
+  set(f(value));
 };
 
-let make = (~get, ~set) => {
-  {get, set};
+let set = (lens, value, state) => {
+  let (_, set) = lens(state);
+  set(value);
 };
 
-let view = (state, lens) => lens.get(state);
-let modify = (f, state, lens) => lens.set(f(lens.get(state)), state);
-
-let compose = (outerLens, innerLens) => {
-  let get = state => state |> outerLens.get |> innerLens.get;
-  let set = (value, state) => {
-    let updated = state |> outerLens.get |> innerLens.set(value);
-    outerLens.set(updated, state);
-  };
-  {get, set};
+let compose = (outerLens, innerLens, parent) => {
+  let (outerChild, setOuter) = outerLens(parent);
+  let (innerChild, setInner) = innerLens(outerChild);
+  (innerChild, setOuter @. setInner);
 };
 
 // Default lenses
 
-let arrayIndex = i => {
-  get: arr => arr[i],
-  set: (value, arr) => {
+let arrayIndex = (i, arr) => (
+  arr[i],
+  value => {
     let result = Array.copy(arr);
     result[i] = value;
     result;
   },
-};
+);
 
-let arrayLength = filler => {
-  get: Array.length,
-  set: (length, arr) => {
+let arrayLength = (filler, arr) => (
+  Array.length(arr),
+  length => {
     let current = Array.length(arr);
     if (length >= current) {
       Array.append(arr, Array.make(length - current, filler));
@@ -40,9 +47,4 @@ let arrayLength = filler => {
       Array.sub(arr, 0, max(0, length));
     };
   },
-};
-
-let assoc = key => {
-  get: List.assoc(key),
-  set: (value, assoc) => [(key, value), ...assoc],
-};
+);

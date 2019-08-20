@@ -1,37 +1,45 @@
 module Store = Reductive.Store;
 
 module Lens: {
-  type t('state, 'value);
+  type lens('childOut, 'childIn, 'parentOut, 'parentIn);
+  type t('parent, 'child) = lens('child, 'child, 'parent, 'parent);
 
   let make:
-    (~get: 'state => 'value, ~set: ('value, 'state) => 'state) =>
-    t('state, 'value);
+    (~get: 'parent => 'child, ~set: ('child, 'parent) => 'parent) =>
+    t('parent, 'child);
+
+  let lens:
+    ('parentIn => ('childIn, 'childOut => 'parentOut)) =>
+    lens('childOut, 'childIn, 'parentOut, 'parentIn);
 
   // Operations
-  let view: ('state, t('state, 'value)) => 'value;
-  let modify: ('value => 'value, 'state, t('state, 'value)) => 'state;
+  let view: (t('parent, 'child), 'parent) => 'child;
+  let set: (t('parent, 'child), 'child, 'parent) => 'parent;
+  let modify: (t('parent, 'child), 'child => 'child, 'parent) => 'parent;
   let compose:
-    (t('state, 'valueA), t('valueA, 'valueB)) => t('state, 'valueB);
+    (t('parent, 'child), t('child, 'grandchild)) => t('parent, 'grandchild);
 
   // Default lenses
-  let arrayIndex: int => t(array('value), 'value);
+  let arrayIndex: int => t(array('child), 'child);
   let arrayLength: 'filler => t(array('filler), int);
 };
 
 module Selector: {
-  type t('state, 'value);
+  type t('parent, 'child);
 
   let make:
-    (~lens: Lens.t('state, 'value), ~path: array(string)) => t('state, 'value);
+    (~lens: Lens.t('parent, 'child), ~path: array(string)) =>
+    t('parent, 'child);
 
   // Operations
-  let view: ('state, t('state, 'value)) => 'value;
-  let modify: ('value => 'value, 'state, t('state, 'value)) => 'state;
+  let view: (t('parent, 'child), 'parent) => 'child;
+  let set: (t('parent, 'child), 'child, 'parent) => 'parent;
+  let modify: (t('parent, 'child), 'child => 'child, 'parent) => 'parent;
   let compose:
-    (t('state, 'valueA), t('valueA, 'valueB)) => t('state, 'valueB);
+    (t('parent, 'child), t('child, 'grandchild)) => t('parent, 'grandchild);
 
   // Default lenses
-  let arrayIndex: int => t(array('value), 'value);
+  let arrayIndex: int => t(array('a), 'a);
   let arrayLength: 'filler => t(array('filler), int);
 };
 
@@ -39,11 +47,13 @@ module TrackedSelector: {
   module Make:
     () =>
      {
+      let set: (Selector.t('parent, 'child), 'child, 'parent) => 'parent;
       let modify:
-        (Selector.t('state, 'value), 'value => 'value, 'state) => 'state;
-      let subscribe: (Selector.t('state, 'value), unit => unit, unit) => unit;
+        (Selector.t('parent, 'child), 'child => 'child, 'parent) => 'parent;
+      let subscribe:
+        (Selector.t('parent, 'child), unit => unit, unit) => unit;
       let storeEnhancer:
-        (Store.t('action, 'state), 'action => unit, 'action) => unit;
+        (Store.t('action, 'parent), 'action => unit, 'action) => unit;
     };
 };
 

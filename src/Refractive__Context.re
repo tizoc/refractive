@@ -35,7 +35,7 @@ module Make = (Config: CONFIG) => {
       );
     let getCurrentValue =
       React.useCallback1(
-        () => Selector.view(Store.getState(store), selector),
+        () => Selector.view(selector, Store.getState(store)),
         [|Selector.pathId(selector)|],
       );
     useSubscription(getCurrentValue, subscribe);

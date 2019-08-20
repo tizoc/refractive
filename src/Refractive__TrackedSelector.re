@@ -6,14 +6,22 @@ module Make = (()) => {
 
   let modifications = ref(Belt.Set.String.empty);
 
-  let modify = (selector, f, state) => {
+  let touch = selector =>
     modifications :=
       Array.fold_left(
         Belt.Set.String.add,
         modifications^,
         Selector.affectedPaths(selector),
       );
-    Selector.modify(f, state, selector);
+
+  let set = (selector, value, state) => {
+    touch(selector);
+    Selector.set(selector, value, state);
+  };
+
+  let modify = (selector, f, state) => {
+    touch(selector);
+    Selector.modify(selector, f, state);
   };
 
   let unsubscribe = (selector, listener, ()) => {

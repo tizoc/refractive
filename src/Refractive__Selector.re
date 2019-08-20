@@ -1,5 +1,7 @@
 module Lens = Refractive__Lens;
 
+let (@.) = (g, f, x) => g(f(x));
+
 let sep = ".";
 let join = (a, b) => String.concat(sep, [a, b]);
 
@@ -16,7 +18,7 @@ let pathId = s => s.pathString;
 let affectedPaths = s => s.affectedPaths;
 let observedPaths = s => s.observedPaths;
 
-let string_of_path = path => path |> List.rev |> String.concat(sep);
+let string_of_path = String.concat(sep) @. List.rev;
 
 let rec unfoldFragments = fragments =>
   switch (fragments) {
@@ -28,7 +30,7 @@ let rec unfoldFragments = fragments =>
     ]
   };
 
-let unfoldPath = path => unfoldFragments(Array.to_list(path));
+let unfoldPath = unfoldFragments @. Array.to_list;
 
 let make = (~lens, ~path) => {
   if (Array.length(path) < 1) {
@@ -46,9 +48,9 @@ let make = (~lens, ~path) => {
   {lens, path, pathString, affectedPaths, observedPaths};
 };
 
-let view = (state, selector) => Lens.view(state, selector.lens);
-
-let modify = (f, state, selector) => Lens.modify(f, state, selector.lens);
+let view = s => Lens.view(s.lens);
+let modify = s => Lens.modify(s.lens);
+let set = s => Lens.set(s.lens);
 
 let compose = (outerSelector, innerSelector) => {
   let lens = Lens.compose(outerSelector.lens, innerSelector.lens);
