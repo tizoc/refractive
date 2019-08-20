@@ -45,11 +45,11 @@ module TestStore = {
         switch (action) {
         | Reset =>
           state
-          |> modify(counters, _ => initialValue.counters)
-          |> modify(textA, _ => initialValue.textA)
-          |> modify(textB, _ => initialValue.textB)
-        | SetTextA(s) => modify(textA, _ => s, state)
-        | SetTextB(s) => modify(textB, _ => s, state)
+          |> set(counters, initialValue.counters)
+          |> set(textA, initialValue.textA)
+          |> set(textB, initialValue.textB)
+        | SetTextA(s) => set(textA, s, state)
+        | SetTextB(s) => set(textB, s, state)
         | IncrementCounter(index) =>
           modify(counterValue(index), n => n + 1, state)
         | IncrementAll =>

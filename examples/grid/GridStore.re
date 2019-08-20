@@ -18,8 +18,8 @@ module Lenses = {
     );
   let pvecIndex = idx =>
     Refractive.Lens.make(
-      ~get=v => Immutable.Vector.getOrRaise(idx, v),
-      ~set=(newVal, v) => Immutable.Vector.update(idx, newVal, v),
+      ~get=Immutable.Vector.getOrRaise(idx),
+      ~set=Immutable.Vector.update(idx),
     );
 };
 
@@ -28,12 +28,15 @@ module Selectors = {
   let (|-) = compose;
   let cells = make(~lens=Lenses.cells, ~path=[|"cells"|]);
   let pvecIndex = i =>
-    make(~lens=Lenses.pvecIndex(i), ~path=[|"get(" ++ string_of_int(i) ++ ")"|]);
+    make(
+      ~lens=Lenses.pvecIndex(i),
+      ~path=[|"get(" ++ string_of_int(i) ++ ")"|],
+    );
   let cellValue = i => cells |- pvecIndex(i);
 };
 
 // Module for tracked selectors and modifications
-// This module's `modify` function must be used to update the state
+// This module's `modify` and `set` functions must be used to update the state
 // and the `storeEnhancer` function should be used to enhance the store
 module Tracked =
   Refractive.TrackedSelector.Make({});
@@ -43,12 +46,11 @@ let reducer = (state, action) => {
     Tracked.(
       switch (action) {
       | Incr(idx) => modify(cellValue(idx), v => (v + 1) mod 10, state)
-      | Reset => modify(cells, _ => initialValue.cells, state)
+      | Reset => set(cells, initialValue.cells, state)
       | Randomize =>
-        modify(
+        set(
           cells,
-          _ =>
-            Immutable.Vector.init(sideSize * sideSize, _ => Random.int(10)),
+          Immutable.Vector.init(sideSize * sideSize, _ => Random.int(10)),
           state,
         )
       }

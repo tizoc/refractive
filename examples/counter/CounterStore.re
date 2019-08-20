@@ -24,7 +24,7 @@ module Selectors = {
 };
 
 // Module for tracked selectors and modifications
-// This module's `modify` function must be used to update the state
+// This module's `modify` and `set` functions must be used to update the state
 // and the `storeEnhancer` function should be used to enhance the store
 module Tracked =
   Refractive.TrackedSelector.Make({});
