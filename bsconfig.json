@@ -10,7 +10,8 @@
       "subdirs": [
         "counter",
         "grid",
-        "grid-concurrent"
+        "grid-concurrent",
+        "grid-reductive"
       ],
       "type": "dev"
     },
