@@ -1,6 +1,6 @@
 module Selectors = GridStore.Selectors;
-let useDispatch = GridStore.Context.useDispatch;
-let useSelector = GridStore.Context.useSelector;
+module StoreContext = Refractive.Context.Make(GridStore);
+open StoreContext.Hooks;
 
 module GridCell = {
   let colors = [|
@@ -86,12 +86,12 @@ module App = {
     let handleReset = React.useCallback0(_ => dispatch(Reset));
     let handleRandomize = React.useCallback0(_ => dispatch(Randomize));
 
-    <GridStore.Context.Provider>
+    <StoreContext.Provider>
       <h1> {React.string("Grid example")} </h1>
       <button onClick=handleReset> {React.string("Reset")} </button>
       <button onClick=handleRandomize> {React.string("Randomize")} </button>
       <GridContainer />
-    </GridStore.Context.Provider>;
+    </StoreContext.Provider>;
   };
 };
 

@@ -8,11 +8,15 @@ module type CONFIG = {
   type action;
 
   let store: Store.t(action, state);
-  let subscribeSelector: (Selector.t(state, 'a), unit => unit, unit) => unit;
+
+  let subscribe: (Selector.t(state, 'a), unit => unit, unit) => unit;
+  let notify: unit => unit;
 };
 
 module Make = (Config: CONFIG) => {
   let context = React.createContext(Config.store);
+
+  Store.subscribe(Config.store, Config.notify);
 
   module Provider = {
     [@react.component]
@@ -24,20 +28,22 @@ module Make = (Config: CONFIG) => {
     };
   };
 
-  let useDispatch = () => Store.dispatch(React.useContext(context));
+  module Hooks = {
+    let useDispatch = () => Store.dispatch(React.useContext(context));
 
-  let useSelector = selector => {
-    let store = React.useContext(context);
-    let subscribe =
-      React.useCallback1(
-        handler => Config.subscribeSelector(selector, handler),
-        [|Selector.pathId(selector)|],
-      );
-    let getCurrentValue =
-      React.useCallback1(
-        () => Selector.view(selector, Store.getState(store)),
-        [|Selector.pathId(selector)|],
-      );
-    useSubscription(getCurrentValue, subscribe);
+    let useSelector = selector => {
+      let store = React.useContext(context);
+      let subscribe =
+        React.useCallback1(
+          handler => Config.subscribe(selector, handler),
+          [|Selector.pathId(selector)|],
+        );
+      let getCurrentValue =
+        React.useCallback1(
+          () => Selector.view(selector, Store.getState(store)),
+          [|Selector.pathId(selector)|],
+        );
+      useSubscription(getCurrentValue, subscribe);
+    };
   };
 };

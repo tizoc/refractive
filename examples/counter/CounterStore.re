@@ -1,4 +1,4 @@
-type t = {counters: array(int)};
+type state = {counters: array(int)};
 let initialValue = {counters: [|0, 0, 0, 0, 0|]};
 
 type action =
@@ -25,36 +25,20 @@ module Selectors = {
 
 // Module for tracked selectors and modifications
 // This module's `modify` and `set` functions must be used to update the state
-// and the `storeEnhancer` function should be used to enhance the store
-module Tracked =
-  Refractive.TrackedSelector.Make({});
+include Refractive.TrackedSelector.Make({});
 
 let reducer = (state, action) => {
-  open Selectors;
-  open Tracked;
-  switch (action) {
-  | AppendCounter => modify(countersCount, count => count + 1, state)
-  | RemoveLastCounter => modify(countersCount, count => count - 1, state)
-  | IncrementCounter(index) =>
-    modify(counterValue(index), n => n + 1, state)
-  | DecrementCounter(index) =>
-    modify(counterValue(index), n => n - 1, state)
-  };
+  Selectors.(
+    switch (action) {
+    | AppendCounter => modify(countersCount, count => count + 1, state)
+    | RemoveLastCounter => modify(countersCount, count => count - 1, state)
+    | IncrementCounter(index) =>
+      modify(counterValue(index), n => n + 1, state)
+    | DecrementCounter(index) =>
+      modify(counterValue(index), n => n - 1, state)
+    }
+  );
 };
 
-module Context =
-  Refractive.Context.Make({
-    type state = t;
-    type _action = action;
-    type action = _action;
-
-    let store =
-      Reductive.Store.create(
-        ~reducer,
-        ~preloadedState=initialValue,
-        ~enhancer=Tracked.storeEnhancer,
-        (),
-      );
-
-    let subscribeSelector = Tracked.subscribe;
-  });
+let store =
+  Reductive.Store.create(~reducer, ~preloadedState=initialValue, ());

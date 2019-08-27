@@ -1,5 +1,7 @@
-let useDispatch = GridReductiveStore.Context.useDispatch;
-let useSelector = GridReductiveStore.Context.useSelector;
+module StoreContext = ReductiveContext.Make(GridReductiveStore);
+
+let useDispatch = StoreContext.useDispatch;
+let useSelector = StoreContext.useSelector;
 
 module GridCell = {
   let colors = [|
@@ -30,7 +32,7 @@ module GridCell = {
     let dispatch = useDispatch();
     let selector =
       React.useCallback1(
-        (state: GridStore.t) =>
+        (state: GridReductiveStore.state) =>
           Immutable.Vector.getOrRaise(index, state.cells),
         [|index|],
       );
@@ -89,12 +91,12 @@ module App = {
     let handleReset = React.useCallback0(_ => dispatch(Reset));
     let handleRandomize = React.useCallback0(_ => dispatch(Randomize));
 
-    <GridReductiveStore.Context.Provider>
+    <StoreContext.Provider>
       <h1> {React.string("Grid example (without Refractive)")} </h1>
       <button onClick=handleReset> {React.string("Reset")} </button>
       <button onClick=handleRandomize> {React.string("Randomize")} </button>
       <GridContainer />
-    </GridReductiveStore.Context.Provider>;
+    </StoreContext.Provider>;
   };
 };
 

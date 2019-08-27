@@ -1,6 +1,6 @@
 module Selectors = CounterStore.Selectors;
-let useDispatch = CounterStore.Context.useDispatch;
-let useSelector = CounterStore.Context.useSelector;
+module StoreContext = Refractive.Context.Make(CounterStore);
+open StoreContext.Hooks;
 
 module CounterDisplay = {
   let style = ReactDOMRe.Style.make(~margin="1em", ());
@@ -99,7 +99,7 @@ module CountersSum = {
 module App = {
   [@react.component]
   let make = () => {
-    <CounterStore.Context.Provider>
+    <StoreContext.Provider>
       <h1> {React.string("Counter example")} </h1>
       <h2> {React.string("Sum")} </h2>
       <CountersSum />
@@ -107,7 +107,7 @@ module App = {
       <CountersSequence />
       <h2> {React.string("Counter controls")} </h2>
       <CountersControls />
-    </CounterStore.Context.Provider>;
+    </StoreContext.Provider>;
   };
 };
 

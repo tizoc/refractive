@@ -1,7 +1,10 @@
+type state = GridStore.state;
+type action = GridStore.action;
+
 let sideSize = GridStore.sideSize;
 let initialValue = GridStore.initialValue;
 
-let reducer = (state: GridStore.t, action: GridStore.action) => {
+let reducer = (state: GridStore.state, action: GridStore.action) => {
   switch (action) {
   | Incr(idx) =>
     let value = (Immutable.Vector.getOrRaise(idx, state.cells) + 1) mod 10;
@@ -15,10 +18,3 @@ let reducer = (state: GridStore.t, action: GridStore.action) => {
 
 let store =
   Reductive.Store.create(~reducer, ~preloadedState=initialValue, ());
-
-module Context =
-  ReductiveContext.Make({
-    type state = GridStore.t;
-    type action = GridStore.action;
-    let store = store;
-  });

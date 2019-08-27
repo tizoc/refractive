@@ -2,7 +2,7 @@ open Jest;
 open Expect;
 
 module TestStore = {
-  type t = {
+  type state = {
     counters: array(int),
     textA: string,
     textB: string,
@@ -36,47 +36,31 @@ module TestStore = {
     let textB = make(~lens=Lenses.textB, ~path=[|"textB"|]);
   };
 
-  module Tracked =
-    Refractive.TrackedSelector.Make({});
+  include Refractive.TrackedSelector.Make({});
 
   let reducer = (state, action) => {
     Selectors.(
-      Tracked.(
-        switch (action) {
-        | Reset =>
-          state
-          |> set(counters, initialValue.counters)
-          |> set(textA, initialValue.textA)
-          |> set(textB, initialValue.textB)
-        | SetTextA(s) => set(textA, s, state)
-        | SetTextB(s) => set(textB, s, state)
-        | IncrementCounter(index) =>
-          modify(counterValue(index), n => n + 1, state)
-        | IncrementAll =>
-          modify(counters, c => Array.map(n => n + 1, c), state)
-        }
-      )
+      switch (action) {
+      | Reset =>
+        state
+        |> set(counters, initialValue.counters)
+        |> set(textA, initialValue.textA)
+        |> set(textB, initialValue.textB)
+      | SetTextA(s) => set(textA, s, state)
+      | SetTextB(s) => set(textB, s, state)
+      | IncrementCounter(index) =>
+        modify(counterValue(index), n => n + 1, state)
+      | IncrementAll =>
+        modify(counters, c => Array.map(n => n + 1, c), state)
+      }
     );
   };
 
   let store =
-    Reductive.Store.create(
-      ~reducer,
-      ~preloadedState=initialValue,
-      ~enhancer=Tracked.storeEnhancer,
-      (),
-    );
-
-  module Context =
-    Refractive.Context.Make({
-      type state = t;
-      type _action = action;
-      type action = _action;
-
-      let store = store;
-      let subscribeSelector = Tracked.subscribe;
-    });
+    Reductive.Store.create(~reducer, ~preloadedState=initialValue, ());
 };
+
+module TestStoreContext = Refractive.Context.Make(TestStore);
 
 let revArray = list => List.rev(list) |> Array.of_list;
 
@@ -87,13 +71,13 @@ describe("useSelector", () => {
   module Wrapper = {
     [@react.component]
     let make = (~children) => {
-      <TestStore.Context.Provider> children </TestStore.Context.Provider>;
+      <TestStoreContext.Provider> children </TestStoreContext.Provider>;
     };
   };
 
   module Selectors = TestStore.Selectors;
 
-  let useSelector = TestStore.Context.useSelector;
+  let useSelector = TestStoreContext.Hooks.useSelector;
 
   let renderHookWrapped = render =>
     renderHook(render, ~options=Options.t(~wrapper=Wrapper.make, ()), ());

@@ -1,15 +1,16 @@
 module Selector = Refractive__Selector;
 
-module Make = (()) => {
-  let listeners: Belt.HashMap.String.t(list(unit => unit)) =
-    Belt.HashMap.String.make(~hintSize=250);
+module L = Belt.HashMap.String;
+module M = Belt.Set.String;
 
-  let modifications = ref(Belt.Set.String.empty);
+module Make = (()) => {
+  let listeners: L.t(list(unit => unit)) = L.make(~hintSize=250);
+  let modifications = ref(M.empty);
 
   let touch = selector =>
     modifications :=
       Array.fold_left(
-        Belt.Set.String.add,
+        M.add,
         modifications^,
         Selector.affectedPaths(selector),
       );
@@ -28,12 +29,12 @@ module Make = (()) => {
     selector
     |> Selector.observedPaths
     |> Array.iter(path =>
-         switch (Belt.HashMap.String.get(listeners, path)) {
+         switch (L.get(listeners, path)) {
          | None => ()
          | Some(pathListeners) =>
            let matchedListeners =
              List.filter(l => listener !== l, pathListeners);
-           Belt.HashMap.String.set(listeners, path, matchedListeners);
+           L.set(listeners, path, matchedListeners);
          }
        );
   };
@@ -43,30 +44,22 @@ module Make = (()) => {
     |> Selector.observedPaths
     |> Array.iter(path => {
          let pathListeners =
-           Belt.Option.getWithDefault(
-             Belt.HashMap.String.get(listeners, path),
-             [],
-           );
-         Belt.HashMap.String.set(
-           listeners,
-           path,
-           pathListeners @ [listener],
-         );
+           Belt.Option.getWithDefault(L.get(listeners, path), []);
+         L.set(listeners, path, pathListeners @ [listener]);
        });
     unsubscribe(selector, listener);
   };
 
   let notifyAllInPath = path => {
-    switch (Belt.HashMap.String.get(listeners, path)) {
+    switch (L.get(listeners, path)) {
     | None => ()
     | Some(pathListeners) => List.iter(listener => listener(), pathListeners)
     };
   };
 
-  let storeEnhancer = (_store, dispatch, action) => {
-    dispatch(action);
+  let notify = () => {
     let paths = modifications^;
-    modifications := Belt.Set.String.empty;
-    Belt.Set.String.forEach(paths, notifyAllInPath);
+    modifications := M.empty;
+    M.forEach(paths, notifyAllInPath);
   };
 };

@@ -52,8 +52,7 @@ module TrackedSelector: {
         (Selector.t('parent, 'child), 'child => 'child, 'parent) => 'parent;
       let subscribe:
         (Selector.t('parent, 'child), unit => unit, unit) => unit;
-      let storeEnhancer:
-        (Store.t('action, 'parent), 'action => unit, 'action) => unit;
+      let notify: unit => unit;
     };
 };
 
@@ -62,21 +61,21 @@ module Context: {
     type state;
     type action;
     let store: Store.t(action, state);
-    let subscribeSelector:
-      (Selector.t(state, 'a), unit => unit, unit) => unit;
+    let subscribe: (Selector.t(state, 'a), unit => unit, unit) => unit;
+    let notify: unit => unit;
   };
 
   module Make:
     (Config: CONFIG) =>
      {
-      let context: React.Context.t(Store.t(Config.action, Config.state));
-
       module Provider: {
         [@react.component]
         let make: (~children: React.element) => React.element;
       };
 
-      let useDispatch: (unit, Config.action) => unit;
-      let useSelector: Selector.t(Config.state, 'value) => 'value;
+      module Hooks: {
+        let useDispatch: (unit, Config.action) => unit;
+        let useSelector: Selector.t(Config.state, 'value) => 'value;
+      };
     };
 };
