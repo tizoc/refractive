@@ -8,7 +8,7 @@ Lenses and tracked selectors hooks for [reductive](https://github.com/reasonml-c
 
 ## Preview
 
-```reasonml
+```reason
 module Store = {
   type state = {counter: int};
 
