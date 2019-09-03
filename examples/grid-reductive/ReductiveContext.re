@@ -45,7 +45,8 @@ module Make = (Config: Config) => {
         (selector, storeFromContext),
       );
 
-    let selectedState = Refractive__Subscription.useSubscription(getCurrentValue, subscribe);
+    let selectedState =
+      Refractive__Subscription.useSubscription({getCurrentValue, subscribe});
 
     selectedState;
   };

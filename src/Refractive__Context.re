@@ -43,7 +43,7 @@ module Make = (Config: CONFIG) => {
           () => Selector.view(selector, Store.getState(store)),
           [|Selector.pathId(selector)|],
         );
-      useSubscription(getCurrentValue, subscribe);
+      useSubscription({getCurrentValue, subscribe});
     };
   };
 };

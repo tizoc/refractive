@@ -37,5 +37,8 @@
     "reductive": "reasonml-community/reductive",
     "webpack": "^4.21.0",
     "webpack-cli": "^3.1.2"
+  },
+  "dependencies": {
+    "use-subscription": "^1.0.0"
   }
 }
