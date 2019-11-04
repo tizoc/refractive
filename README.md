@@ -2,6 +2,8 @@
 
 Lenses and tracked selectors hooks for [reductive](https://github.com/reasonml-community/reductive).
 
+A PPX rewriter that generates lenses and selectors for record types can be found [here](https://github.com/tizoc/refractive-ppx).
+
 ## NOTE
 
 **This is proof of concept at the moment, and while it works, the API is not stable.**
