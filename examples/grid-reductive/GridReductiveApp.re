@@ -91,7 +91,7 @@ module App = {
     let handleReset = React.useCallback0(_ => dispatch(Reset));
     let handleRandomize = React.useCallback0(_ => dispatch(Randomize));
 
-    <StoreContext.Provider>
+    <StoreContext.Provider store={GridReductiveStore.store}>
       <h1> {React.string("Grid example (without Refractive)")} </h1>
       <button onClick=handleReset> {React.string("Reset")} </button>
       <button onClick=handleRandomize> {React.string("Randomize")} </button>
