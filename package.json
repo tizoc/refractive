@@ -19,6 +19,9 @@
     "lenses",
     "state management"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "tizoc",
   "license": "BSD-3-Clause",
   "peerDependencies": {
