@@ -99,8 +99,8 @@ Refractive avoids this problem by subscribing to changes to the stoure through *
 
 To run the example:
 
-    yarn install
-    yarn build
-    yarn webpack
+    npm install
+    npm run build
+    npx webpack
 
 and then open `index.html` of any of the examples under the `examples/` directory in your browser.
