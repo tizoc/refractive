@@ -21,7 +21,7 @@
     }
   ],
   "suffix": ".bs.js",
-  "namespace": true,
+  "namespace": false,
   "bs-dependencies": [
     "reason-react",
     "reductive"
