@@ -1,8 +1,8 @@
 let sideSize = 40;
 
-type state = {cells: Immutable.Vector.t(int)};
+type state = {cells: Belt.Map.Int.t(int)};
 let initialValue = {
-  cells: Immutable.Vector.init(sideSize * sideSize, _ => 0),
+  cells: Belt.Map.Int.fromArray(Belt.Array.makeBy(sideSize * sideSize, idx => (idx, 0))),
 };
 
 type action =
@@ -18,8 +18,8 @@ module Lenses = {
     );
   let pvecIndex = idx =>
     Refractive.Lens.make(
-      ~get=Immutable.Vector.getOrRaise(idx),
-      ~set=Immutable.Vector.update(idx),
+      ~get=pv => Belt.Map.Int.getExn(pv, idx),
+      ~set=(newVal, pv) => Belt.Map.Int.set(pv, idx, newVal),
     );
 };
 
@@ -47,7 +47,7 @@ let reducer = (state, action) => {
     | Randomize =>
       set(
         cells,
-        Immutable.Vector.init(sideSize * sideSize, _ => Random.int(10)),
+        Belt.Map.Int.fromArray(Belt.Array.makeBy(sideSize * sideSize, idx => (idx, Random.int(10)))),
         state,
       )
     }

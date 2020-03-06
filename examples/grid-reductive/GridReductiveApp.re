@@ -33,7 +33,7 @@ module GridCell = {
     let selector =
       React.useCallback1(
         (state: GridReductiveStore.state) =>
-          Immutable.Vector.getOrRaise(index, state.cells),
+          Belt.Map.Int.getExn(state.cells, index),
         [|index|],
       );
     let cycle =

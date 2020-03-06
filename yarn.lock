@@ -971,11 +971,6 @@ bs-dom-testing-library@^0.5.0:
   dependencies:
     "@testing-library/dom" "^5.6.0"
 
-bs-platform@^2.2.1:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-2.2.3.tgz#d905ae10a5f3621e6a739041dfa0b58483a2174f"
-  integrity sha1-2QWuEKXzYh5qc5BB36C1hIOiF08=
-
 bs-platform@^7.1.1:
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-7.1.1.tgz#ed4032de7ab15158c61d8994680a05393e3ddd74"
@@ -2099,12 +2094,6 @@ iferr@^0.1.5:
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/iferr/-/iferr-0.1.5.tgz#c60eed69e6d8fdb6b3104a1fcbca1c192dc5b501"
   integrity sha1-xg7taebY/bazEEofy8ocGS3FtQE=
-
-"immutable-re@https://github.com/facebookarchive/immutable-re.git":
-  version "0.0.15"
-  resolved "https://github.com/facebookarchive/immutable-re.git#d55f65f7fc638ac17cfdd8064a0401d4cde5aad2"
-  dependencies:
-    bs-platform "^2.2.1"
 
 import-local@2.0.0, import-local@^2.0.0:
   version "2.0.0"
@@ -3812,9 +3801,10 @@ reason-react@^0.7.0:
     react ">=16.8.1"
     react-dom ">=16.8.1"
 
-reductive@reasonml-community/reductive:
+reductive@^2.0.1:
   version "2.0.1"
-  resolved "https://codeload.github.com/reasonml-community/reductive/tar.gz/c0016fedd6ffce282472a59d841d62b9c8886550"
+  resolved "https://registry.yarnpkg.com/reductive/-/reductive-2.0.1.tgz#23062796549f329bc4216adaad96fe103a120f29"
+  integrity sha512-uOaB+oJSp/dia2T7issdqDvfBhlZrzZ0lYlVd73Pn0MzIBl/jGqEWuA/JbT5KzpRRCTs/OS5XhelkVQKfyadTw==
   dependencies:
     use-subscription "^1.0.0"
 

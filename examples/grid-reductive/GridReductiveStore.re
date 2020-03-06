@@ -7,11 +7,11 @@ let initialValue = GridStore.initialValue;
 let reducer = (state: GridStore.state, action: GridStore.action) => {
   switch (action) {
   | Incr(idx) =>
-    let value = (Immutable.Vector.getOrRaise(idx, state.cells) + 1) mod 10;
-    GridStore.{cells: Immutable.Vector.update(idx, value, state.cells)};
+    let value = (Belt.Map.Int.getExn(state.cells, idx) + 1) mod 10;
+    GridStore.{cells: Belt.Map.Int.set(state.cells, idx, value)};
   | Reset => initialValue
   | Randomize => {
-      cells: Immutable.Vector.init(sideSize * sideSize, _ => Random.int(10)),
+      cells: Belt.Map.Int.fromArray(Belt.Array.makeBy(sideSize * sideSize, idx => (idx, Random.int(10)))),
     }
   };
 };
