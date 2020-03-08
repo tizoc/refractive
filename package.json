@@ -19,6 +19,11 @@
     "lenses",
     "state management"
   ],
+  "homepage": "https://github.com/tizoc/refractive",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tizoc/refractive.git"
+  },
   "publishConfig": {
     "access": "public"
   },
