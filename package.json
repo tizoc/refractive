@@ -1,6 +1,6 @@
 {
   "name": "@tizoc/refractive",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Lenses and tracked selectors enhancer and hooks for Reductive",
   "main": "index.js",
   "scripts": {
