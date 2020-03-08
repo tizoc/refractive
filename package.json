@@ -46,6 +46,6 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
-    "use-subscription": "^1.0.0"
+    "use-subscription": "^1.4.0"
   }
 }
