@@ -26,6 +26,46 @@ let compose = (outerLens, innerLens, parent) => {
   (innerChild, setOuter @. setInner);
 };
 
+// TODO: raise exception when trying to set (or log a warning)
+let const = (value, state) => (value, _ => state);
+
+let pair = (leftLens, rightLens, parent) => {
+  let (leftChild, setLeft) = leftLens(parent);
+  let (rightChild, _) = rightLens(parent);
+  let setPairs = ((l, r)) => {
+    let parentLeftUpdated = setLeft(l);
+    let (_, setRight) = rightLens(parentLeftUpdated);
+    setRight(r);
+  };
+  ((leftChild, rightChild), setPairs);
+};
+
+let map = (f, lens, parent) => {
+  let (value, _) = lens(parent);
+  (f(value), _ => assert(false));
+};
+
+let map2 = (f, lens1, lens2, parent) => {
+  let (value1, _) = lens1(parent);
+  let (value2, _) = lens2(parent);
+  (f(value1, value2), _ => assert(false));
+};
+
+let map3 = (f, lens1, lens2, lens3, parent) => {
+  let (value1, _) = lens1(parent);
+  let (value2, _) = lens2(parent);
+  let (value3, _) = lens3(parent);
+  (f(value1, value2, value3), _ => assert(false));
+};
+
+let map4 = (f, lens1, lens2, lens3, lens4, parent) => {
+  let (value1, _) = lens1(parent);
+  let (value2, _) = lens2(parent);
+  let (value3, _) = lens3(parent);
+  let (value4, _) = lens4(parent);
+  (f(value1, value2, value3, value4), _ => assert(false));
+};
+
 // Default lenses
 
 let arrayIndex = (i, arr) => (

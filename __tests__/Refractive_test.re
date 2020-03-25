@@ -1,6 +1,133 @@
 open Jest;
 open Expect;
 
+describe("Unfold path", () => {
+  open Refractive__Selector;
+
+  test("Unfolds simple path correctly", () => {
+    expect(Array.of_list @@ unfoldPath(Single([|"c", "b", "a"|])))
+    |> toEqual([|"a.b.c", "a.b", "a"|])
+  });
+
+  test("Unfolds forked path with empty prefix correctly", () => {
+    expect(
+      Array.of_list @@
+      unfoldPath(
+        Forked([||], [Single([|"c", "b", "a"|]), Single([|"b"|])]),
+      ),
+    )
+    |> toEqual([|"a.b.c", "a.b", "a", "b"|])
+  });
+
+  test("Unfolds forked path with prefix correctly", () => {
+    expect(
+      Array.of_list @@
+      unfoldPath(
+        Forked(
+          [|"p1", "p0"|],
+          [Single([|"c", "b", "a"|]), Single([|"f", "e"|])],
+        ),
+      ),
+    )
+    |> toEqual([|
+         "p0.p1.a.b.c",
+         "p0.p1.a.b",
+         "p0.p1.e.f",
+         "p0.p1.a",
+         "p0.p1.e",
+         "p0.p1",
+         "p0",
+       |])
+  });
+
+  test("Unfolds more complicated forked path with prefix correctly", () => {
+    expect(
+      Array.of_list @@
+      unfoldPath(
+        Forked(
+          [|"p1", "p0"|],
+          [
+            Single([|"c", "b", "a"|]),
+            Forked([||], [Single([|"h", "g"|]), Single([|"f", "e"|])]),
+          ],
+        ),
+      ),
+    )
+    |> toEqual([|
+         "p0.p1.a.b.c",
+         "p0.p1.a.b",
+         "p0.p1.e.f",
+         "p0.p1.g.h",
+         "p0.p1.a",
+         "p0.p1.e",
+         "p0.p1.g",
+         "p0.p1",
+         "p0",
+       |])
+  });
+});
+
+describe("Selector paths", () => {
+  open Refractive__Selector;
+
+  test("String rendering of simple paths", () => {
+    expect(stringOfPath(Single([|"b"|]))) |> toEqual("b")
+  });
+
+  test("String rendering of another simple path", () => {
+    expect(stringOfPath(Single([|"a", "b", "c"|]))) |> toEqual("c.b.a")
+  });
+
+  test("String rendering of forked path without prefix", () => {
+    expect(
+      stringOfPath(
+        Forked([||], [Single([|"c", "b", "a"|]), Single([|"b"|])]),
+      ),
+    )
+    |> toEqual("{a.b.c, b}")
+  });
+
+  test("String rendering of forked path with prefix", () => {
+    expect(
+      stringOfPath(
+        Forked(
+          [|"p1", "p0"|],
+          [Single([|"c", "b", "a"|]), Single([|"b"|])],
+        ),
+      ),
+    )
+    |> toEqual("p0.p1.{a.b.c, b}")
+  });
+
+  test("Composing two simple paths", () => {
+    expect(
+      stringOfPath(
+        composePath(Single([|"p1", "p0"|]), Single([|"c", "b", "a"|])),
+      ),
+    )
+    |> toEqual("p0.p1.a.b.c")
+  });
+
+  test("Composing a simple path with a fork", () => {
+    expect(
+      stringOfPath(
+        composePath(
+          Single([|"p1", "p0"|]),
+          Forked(
+            [||],
+            [
+              Single([|"c", "b", "a"|]),
+              Single([|"b", "a"|]),
+              Single([|"b"|]),
+            ],
+          ),
+        ),
+      ),
+    )
+    |> toEqual("p0.p1.{a.b.c, a.b, b}")
+  });
+});
+
 module TestStore = {
   type state = {
     counters: array(int),
