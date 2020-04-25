@@ -5,11 +5,17 @@ let (@.) = (g, f, x) => g(f(x));
 let sep = ".";
 let join = (a, b) => String.concat(sep, [a, b]);
 
-type singlePath = array(string); // path fragments are stored in reverse
+type straightPath = array(string); // path fragments are stored in reverse
 
+// Selector paths are either straight or forked
+// Forked paths have:
+// - a base
+// - that has many forks
+// - which are combined back by a joiner
+// - followed by an optional inner path
 type selectorPath =
-  | Single(singlePath)
-  | Forked(singlePath, list(selectorPath));
+  | Straight(straightPath)
+  | Forked(straightPath, list(selectorPath), string, option(selectorPath));
 
 type t('state, 'value) = {
   lens: Lens.t('state, 'value),
@@ -55,34 +61,45 @@ let lengthCmp = (a, b) =>
 
 let rec unfoldPath = path =>
   switch (path) {
-  | Single(path) => path |> Array.to_list |> unfoldFragments
-  | Forked(basePath, forks) =>
+  | Straight(path) => path |> Array.to_list |> unfoldFragments
+  | Forked(basePath, forks, _joiner, _innerPath) =>
+    // TODO: joiner and innerPath?
     let unfoldedBasePath = basePath |> Array.to_list |> unfoldFragments;
     let unfoldedForkPaths = List.map(unfoldPath, forks) |> List.concat;
     let stringBasePath = stringOfRawPath(Array.to_list(basePath));
     let unfoldedPaths =
       List.map(joinPath(stringBasePath), unfoldedForkPaths);
-    List.sort(lengthCmp, unfoldedPaths @ unfoldedBasePath);
+    List.sort_uniq(lengthCmp, unfoldedPaths @ unfoldedBasePath);
   };
 
 let rec validatePath = path =>
   switch (path) {
-  | Single(path) when Array.length(path) < 1 =>
-    invalid_arg("Selector path array must contain at least one element")
-  | Forked(_basePath, forks) => List.iter(validatePath, forks)
-  | _ => ()
+  | Straight(path) =>
+    if (Array.length(path) < 1) {
+      invalid_arg("Selector path array must contain at least one element");
+    }
+  | Forked(_basePath, forks, joiner, innerPath) =>
+    List.iter(validatePath, forks);
+    Belt.Option.forEach(innerPath, validatePath);
+    if (String.length(joiner) < 1) {
+      invalid_arg("Selector joiner cannot be empty");
+    };
   };
 
 let rec stringOfPath = path => {
   switch (path) {
-  | Single(path) => stringOfRawPath(Array.to_list(path))
-  | Forked(basePath, forks) =>
-    let forked =
-      "{" ++ String.concat(", ", List.map(stringOfPath, forks)) ++ "}";
-    if (Array.length(basePath) > 0) {
-      stringOfRawPath(Array.to_list(basePath)) ++ sep ++ forked;
-    } else {
-      forked;
+  | Straight(path) => stringOfRawPath(Array.to_list(path))
+  | Forked(basePath, forks, joiner, innerPath) =>
+    let forked = String.concat(", ", List.map(stringOfPath, forks));
+    let joined = joiner ++ "(" ++ forked ++ ")";
+    let innerPathString =
+      switch (innerPath) {
+      | None => joined
+      | Some(innerPath) => joined ++ sep ++ stringOfPath(innerPath)
+      };
+    switch (Array.to_list(basePath)) {
+    | [] => innerPathString
+    | rawPath => stringOfRawPath(rawPath) ++ sep ++ innerPathString
     };
   };
 };
@@ -102,7 +119,7 @@ let _make = (~lens, ~path) => {
 };
 
 let make = (~lens, ~path) => {
-  _make(~lens, ~path=Single(path));
+  _make(~lens, ~path=Straight(path));
 };
 
 let view = s => Lens.view(s.lens);
@@ -111,30 +128,22 @@ let set = s => Lens.set(s.lens);
 
 let rec composePath = (outerPath, innerPath) =>
   switch (outerPath, innerPath) {
-  | (Single(outerPath), Single(innerPath)) =>
-    Single(Array.append(innerPath, outerPath))
-  | (Single(outerPath), Forked(forkedBasePath, forks)) =>
-    Forked(Array.append(forkedBasePath, outerPath), forks)
+  | (Straight(outerPath), Straight(innerPath)) =>
+    Straight(Array.append(innerPath, outerPath))
+  | (Straight(outerPath), Forked(forkedBasePath, forks, joiner, innerPath)) =>
+    Forked(Array.append(forkedBasePath, outerPath), forks, joiner, innerPath)
+  | (Forked(outerBasePath, outerForkedPaths, joiner, None), moreInnerPath) =>
+    Forked(outerBasePath, outerForkedPaths, joiner, Some(moreInnerPath))
   | (
-      Forked(outerBasePath, outerForkedPaths),
-      Single(_innerPath) as innerPath,
+      Forked(outerBasePath, outerForkedPaths, joiner, Some(innerPath)),
+      moreInnerPath,
     ) =>
     Forked(
       outerBasePath,
-      List.map(composePath(_, innerPath), outerForkedPaths),
+      outerForkedPaths,
+      joiner,
+      Some(composePath(innerPath, moreInnerPath)),
     )
-  | (
-      Forked(outerBasePath, outerForkedPaths),
-      Forked(innerBasePath, innerForkedPaths),
-    ) =>
-    if (pathsEqual(outerBasePath, innerBasePath)) {
-      Forked(
-        outerBasePath,
-        outerForkedPaths @ innerForkedPaths,
-      );
-    } else {
-      invalid_arg("Cannot compose forked paths with non-matching base path");
-    }
   };
 
 let compose = (outerSelector, innerSelector) => {
@@ -147,28 +156,32 @@ let const = value => make(~lens=Lens.const(value), ~path=[|"const()"|]);
 
 let pair = (leftSelector, rightSelector) => {
   let lens = Lens.pair(leftSelector.lens, rightSelector.lens);
-  let path = Forked([||], [leftSelector.path, rightSelector.path]);
+  let path =
+    Forked([||], [leftSelector.path, rightSelector.path], "pair", None);
   _make(~lens, ~path);
 };
 
 let map = (~name, f, selector) => {
   let lens = Lens.map(f, selector.lens);
-  let path = composePath(selector.path, Single([|name|]));
+  let path = composePath(selector.path, Straight([|name|]));
   _make(~lens, ~path);
 };
 
 let map2 = (~name, f, selector1, selector2) => {
   let lens = Lens.map2(f, selector1.lens, selector2.lens);
-  let basePath = Forked([||], [selector1.path, selector2.path]);
-  let path = composePath(basePath, Single([|name|]));
+  let path = Forked([||], [selector1.path, selector2.path], name, None);
   _make(~lens, ~path);
 };
 
 let map3 = (~name, f, selector1, selector2, selector3) => {
   let lens = Lens.map3(f, selector1.lens, selector2.lens, selector3.lens);
-  let basePath =
-    Forked([||], [selector1.path, selector2.path, selector3.path]);
-  let path = composePath(basePath, Single([|name|]));
+  let path =
+    Forked(
+      [||],
+      [selector1.path, selector2.path, selector3.path],
+      name,
+      None,
+    );
   _make(~lens, ~path);
 };
 
@@ -181,12 +194,13 @@ let map4 = (~name, f, selector1, selector2, selector3, selector4) => {
       selector3.lens,
       selector4.lens,
     );
-  let basePath =
+  let path =
     Forked(
       [||],
       [selector1.path, selector2.path, selector3.path, selector4.path],
+      name,
+      None,
     );
-  let path = composePath(basePath, Single([|name|]));
   _make(~lens, ~path);
 };
 // Selector wrappers for default lenses

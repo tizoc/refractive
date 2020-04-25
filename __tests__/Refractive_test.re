@@ -5,7 +5,7 @@ describe("Unfold path", () => {
   open Refractive__Selector;
 
   test("Unfolds simple path correctly", () => {
-    expect(Array.of_list @@ unfoldPath(Single([|"c", "b", "a"|])))
+    expect(Array.of_list @@ unfoldPath(Straight([|"c", "b", "a"|])))
     |> toEqual([|"a.b.c", "a.b", "a"|])
   });
 
@@ -13,7 +13,12 @@ describe("Unfold path", () => {
     expect(
       Array.of_list @@
       unfoldPath(
-        Forked([||], [Single([|"c", "b", "a"|]), Single([|"b"|])]),
+        Forked(
+          [||],
+          [Straight([|"c", "b", "a"|]), Straight([|"b"|])],
+          "join",
+          None,
+        ),
       ),
     )
     |> toEqual([|"a.b.c", "a.b", "a", "b"|])
@@ -25,7 +30,9 @@ describe("Unfold path", () => {
       unfoldPath(
         Forked(
           [|"p1", "p0"|],
-          [Single([|"c", "b", "a"|]), Single([|"f", "e"|])],
+          [Straight([|"c", "b", "a"|]), Straight([|"f", "e"|])],
+          "join",
+          None,
         ),
       ),
     )
@@ -47,9 +54,16 @@ describe("Unfold path", () => {
         Forked(
           [|"p1", "p0"|],
           [
-            Single([|"c", "b", "a"|]),
-            Forked([||], [Single([|"h", "g"|]), Single([|"f", "e"|])]),
+            Straight([|"c", "b", "a"|]),
+            Forked(
+              [||],
+              [Straight([|"h", "g"|]), Straight([|"f", "e"|])],
+              "join",
+              None,
+            ),
           ],
+          "join",
+          None,
         ),
       ),
     )
@@ -71,20 +85,25 @@ describe("Selector paths", () => {
   open Refractive__Selector;
 
   test("String rendering of simple paths", () => {
-    expect(stringOfPath(Single([|"b"|]))) |> toEqual("b")
+    expect(stringOfPath(Straight([|"b"|]))) |> toEqual("b")
   });
 
   test("String rendering of another simple path", () => {
-    expect(stringOfPath(Single([|"a", "b", "c"|]))) |> toEqual("c.b.a")
+    expect(stringOfPath(Straight([|"a", "b", "c"|]))) |> toEqual("c.b.a")
   });
 
   test("String rendering of forked path without prefix", () => {
     expect(
       stringOfPath(
-        Forked([||], [Single([|"c", "b", "a"|]), Single([|"b"|])]),
+        Forked(
+          [||],
+          [Straight([|"c", "b", "a"|]), Straight([|"b"|])],
+          "join",
+          None,
+        ),
       ),
     )
-    |> toEqual("{a.b.c, b}")
+    |> toEqual("join(a.b.c, b)")
   });
 
   test("String rendering of forked path with prefix", () => {
@@ -92,17 +111,19 @@ describe("Selector paths", () => {
       stringOfPath(
         Forked(
           [|"p1", "p0"|],
-          [Single([|"c", "b", "a"|]), Single([|"b"|])],
+          [Straight([|"c", "b", "a"|]), Straight([|"b"|])],
+          "join",
+          None,
         ),
       ),
     )
-    |> toEqual("p0.p1.{a.b.c, b}")
+    |> toEqual("p0.p1.join(a.b.c, b)")
   });
 
   test("Composing two simple paths", () => {
     expect(
       stringOfPath(
-        composePath(Single([|"p1", "p0"|]), Single([|"c", "b", "a"|])),
+        composePath(Straight([|"p1", "p0"|]), Straight([|"c", "b", "a"|])),
       ),
     )
     |> toEqual("p0.p1.a.b.c")
@@ -112,19 +133,53 @@ describe("Selector paths", () => {
     expect(
       stringOfPath(
         composePath(
-          Single([|"p1", "p0"|]),
+          Straight([|"p1", "p0"|]),
           Forked(
             [||],
             [
-              Single([|"c", "b", "a"|]),
-              Single([|"b", "a"|]),
-              Single([|"b"|]),
+              Straight([|"c", "b", "a"|]),
+              Straight([|"b", "a"|]),
+              Straight([|"b"|]),
             ],
+            "join",
+            None,
           ),
         ),
       ),
     )
-    |> toEqual("p0.p1.{a.b.c, a.b, b}")
+    |> toEqual("p0.p1.join(a.b.c, a.b, b)")
+  });
+
+  test("Joined paths are constructed correctly", () => {
+    let s1 = make(~lens=Lens.const(1), ~path=[|"p1", "p0"|]);
+    let s2 = make(~lens=Lens.const(1), ~path=[|"p3", "p2"|]);
+    let mapped = map2(~name="map2()", (a, b) => a + b, s1, s2);
+    expect(mapped.path)
+    |> toEqual(
+         Forked(
+           [||],
+           [Straight([|"p1", "p0"|]), Straight([|"p3", "p2"|])],
+           "map2()",
+           None,
+         ),
+       );
+  });
+
+  test("Joined paths are printed correctly", () => {
+    let s1 = make(~lens=Lens.const(1), ~path=[|"p1", "p0"|]);
+    let s2 = make(~lens=Lens.const(1), ~path=[|"p3", "p2"|]);
+    let mapped = map2(~name="map2", (a, b) => a + b, s1, s2);
+    expect(stringOfPath(mapped.path)) |> toEqual("map2(p0.p1, p2.p3)");
+  });
+
+  test("Joined paths are joined correctly", () => {
+    let s1 = make(~lens=Lens.const(1), ~path=[|"p1", "p0"|]);
+    let s2 = make(~lens=Lens.const(1), ~path=[|"p3", "p2"|]);
+    let mapped1 = map2(~name="map2<a>", (a, b) => a + b, s1, s2);
+    let mapped2 = map2(~name="map2<b>", (a, b) => a - b, s1, s2);
+    let mapped = map2(~name="join", (a, b) => a * b, mapped1, mapped2);
+    expect(stringOfPath(mapped.path))
+    |> toEqual("join(map2<a>(p0.p1, p2.p3), map2<b>(p0.p1, p2.p3))");
   });
 });
 
