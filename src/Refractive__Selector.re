@@ -152,7 +152,7 @@ let compose = (outerSelector, innerSelector) => {
   _make(~lens, ~path);
 };
 
-let const = value => make(~lens=Lens.const(value), ~path=[|"const()"|]);
+let const = (~name="$const", value) => make(~lens=Lens.const(value), ~path=[|name|]);
 
 let pair = (leftSelector, rightSelector) => {
   let lens = Lens.pair(leftSelector.lens, rightSelector.lens);

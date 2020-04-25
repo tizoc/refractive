@@ -70,7 +70,7 @@ module Selector: {
   let compose:
     (t('parent, 'child), t('child, 'grandchild)) => t('parent, 'grandchild);
 
-  let const: 'child => t('parent, 'child);
+  let const: (~name: string=?, 'child) => t('parent, 'child);
 
   let map:
     (~name: string, 'child => 'mapped, t('parent, 'child)) =>
